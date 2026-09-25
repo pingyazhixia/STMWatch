@@ -290,7 +290,7 @@ int Menu(void)
 		else if(menu_flag_temp==3){MenuToFunction();LED();}
 	  else if(menu_flag_temp==4){MenuToFunction();MPU6050();}
 		else if(menu_flag_temp==5){MenuToFunction();Game();}
-		else if(menu_flag_temp==6){}
+		else if(menu_flag_temp==6){MenuToFunction();Emoji();}
 		else if(menu_flag_temp==7){}
 			
 
@@ -626,5 +626,57 @@ int Game(void)
 	}
 }
 
+/*----------------------------------动态表情包-------------------------------------*/
+
+//动态表情包的设计函数
+void Show_Emoji_UI(void)
+{
+	//闭眼和眉毛向下移动
+	for(uint8_t i=0;i<3;i++)
+	{
+		OLED_Clear();
+		OLED_ShowImage(30,10+i,16,16,Eyebrow[0]);//左眉毛
+		OLED_ShowImage(82,10+i,16,16,Eyebrow[1]);//右眉毛
+		OLED_DrawEllipse(40,32,6,6-i,1);//左眼
+		OLED_DrawEllipse(88,32,6,6-i,1);//右眼
+		OLED_ShowImage(54,40,20,20,Mouth);
+		OLED_Update();
+		Delay_ms(100);
+	}
+	
+	//睁眼和眉毛向上移动
+	for(uint8_t i=0;i<3;i++)
+	{
+		OLED_Clear();
+		OLED_ShowImage(30,12-i,16,16,Eyebrow[0]);//左眉毛
+		OLED_ShowImage(82,12-i,16,16,Eyebrow[1]);//右眉毛
+		OLED_DrawEllipse(40,32,6,4+i,1);//左眼
+		OLED_DrawEllipse(88,32,6,4+i,1);//右眼
+		OLED_ShowImage(54,40,20,20,Mouth);
+		OLED_Update();
+		Delay_ms(100);
+	}
+	
+	Delay_ms(500);
+	
+}
+
+//动态表情包通过三个按键控制的控制函数
+int Emoji(void)
+{
+	while(1)
+	{
+		KeyNum=Key_GetNum();
+		if(KeyNum==3)
+		{
+			OLED_Clear();
+			OLED_Update();
+			return 0;
+		}
+		
+		Show_Emoji_UI();
+		
+	}
+}
 
 
