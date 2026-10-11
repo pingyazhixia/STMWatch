@@ -39,3 +39,4 @@
 .\objects\menu.o: .\System\Delay.h
 .\objects\menu.o: D:\IC_Software\KEIL_ARM\CORE\ARM\ARMCC\Bin\..\include\math.h
 .\objects\menu.o: Hardware\dino.h
+.\objects\menu.o: Hardware\AD.h

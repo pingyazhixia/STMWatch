@@ -32,6 +32,21 @@ uint8_t Key_GetNum(void)
 		return 0;
 	}
 }
+
+int press_time;//记录按键按下时长的变量
+void Key3_Tick(void)
+{
+	if (GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_4) == 0)
+	{
+		press_time++;
+	}
+	
+	if((GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_4) == 1))
+	{
+		press_time=0;
+	}
+};
+
 //Key_GetState和Key_Tick(void)配合使用，使用中断功能获取按键的状态
 //中断函数写在main函数后面，中断函数每一秒调用一次
 uint8_t Key_GetState(void)
@@ -45,7 +60,12 @@ uint8_t Key_GetState(void)
 	{
 		return 2;
 	}
-	if (GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_4) == 0)
+		else if ((GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_4) == 0)&&press_time>1000)
+	{
+		return 4;
+	}
+
+	else if (GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_4) == 0)
 	{
 		return 3;
 	}

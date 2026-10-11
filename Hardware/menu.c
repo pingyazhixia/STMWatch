@@ -9,6 +9,8 @@
 #include "Delay.h"
 #include <math.h>
 #include "dino.h"
+#include "AD.h"
+
 
 uint8_t KeyNum;
 
@@ -18,11 +20,48 @@ void Peripheral_Init(void)//外设初始化
 	Key_Init();
 	LED_Init();
 	MPU6050_Init();
+	AD_Init();
 }
 
 
 
 /*----------------------------------首页时钟-------------------------------------*/
+uint16_t ADValue;//AD值
+float VBAT;
+int Battery_Capacity;//电量
+
+void Show_Battery(void)
+{
+	int sum;
+	for(int i=0;i<3000;i++)
+	{
+		ADValue=AD_GetValue();
+		sum+=ADValue;
+		
+	}
+	ADValue=sum/3000;
+	VBAT=(float)ADValue/4095*3.3;
+	Battery_Capacity=(ADValue-3276)*100/819;
+	if(Battery_Capacity<0)Battery_Capacity=0;
+	
+	OLED_ShowNum(85,4,Battery_Capacity,3,OLED_6X8);
+	OLED_ShowChar(103,4,'%',OLED_6X8);
+	
+	if(Battery_Capacity==100)OLED_ShowImage(110,0,16,16,Battery);//满电时的电池显示
+	else if(Battery_Capacity>=10&&Battery_Capacity<100)//有电但不满电的显示（使用清屏函数进行实现
+	{
+		OLED_ShowImage(110,0,16,16,Battery);
+		OLED_ClearArea((112+Battery_Capacity/10),5,(10-Battery_Capacity/10),6);
+		OLED_ClearArea(85,4,6,8);
+	}
+	
+	else//没电的显示
+	{
+		OLED_ShowImage(110,0,16,16,Battery);
+		OLED_ClearArea(112,5,10,6);
+		OLED_ClearArea(85,4,12,8);
+	}
+};
 
 
 void Show_Clock_UI(void)
@@ -69,7 +108,11 @@ int First_Page_Clock(void)
 			OLED_Update();
 			return clkflag;
 		}
-		
+		else if(KeyNum==4)//关机
+		{
+			GPIO_ResetBits(GPIOB, GPIO_Pin_13);
+			GPIO_SetBits(GPIOB, GPIO_Pin_12);
+		};
 		switch(clkflag)
 		{
 			case 1://光标在菜单的两个字上面时
@@ -291,7 +334,7 @@ int Menu(void)
 	  else if(menu_flag_temp==4){MenuToFunction();MPU6050();}
 		else if(menu_flag_temp==5){MenuToFunction();Game();}
 		else if(menu_flag_temp==6){MenuToFunction();Emoji();}
-		else if(menu_flag_temp==7){}
+		else if(menu_flag_temp==7){MenuToFunction();Gradienter();}
 			
 
 			if(menu_flag==1)//此时光标要在退回键
@@ -678,5 +721,31 @@ int Emoji(void)
 		
 	}
 }
+/*----------------------------------水平仪-------------------------------------*/
+
+void Show_Gradienter_UI(void)
+{
+	MPU6050_Calculation();
+	OLED_DrawCircle(64,32,30,0);//画圆
+	OLED_DrawCircle(64-Roll,32+Pitch,4,1);//
+}
+
+int Gradienter(void)
+{
+	while(1)
+	{
+		KeyNum=Key_GetNum();
+		if(KeyNum==3)
+		{
+			OLED_Clear();
+			OLED_Update();
+			return 0;
+		}
+		OLED_Clear();
+		Show_Gradienter_UI();
+		OLED_Update();
+	}
+}
+
 
 
